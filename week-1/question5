@@ -1,0 +1,1 @@
+A branch can be used to point to a history of commits. Each commit in this history of commits points to the commit that came before the current commit.
