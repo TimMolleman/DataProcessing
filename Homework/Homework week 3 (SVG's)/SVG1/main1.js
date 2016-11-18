@@ -1,3 +1,7 @@
+/*
+Naam: Tim Molleman
+Studentnummer: 10587306
+
 /* use this to test out your function */
 window.onload = function() {
  	changeColor("no", "#f4a460");
