@@ -1,0 +1,43 @@
+<!-- 
+Naam: Tim Molleman
+Studentnummer: 10587306
+ -->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Barchart HTML</title>
+	
+  	<link rel="stylesheet" type="text/css" href="d3map.css">
+  	<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script src="http://d3js.org/topojson.v1.min.js"></script>
+	<script src="http://datamaps.github.io/scripts/datamaps.world.min.js?v=1"></script>
+</head>
+<body>
+	<div style="position: relative; width: 800px; height: 40px;">
+		<h1>Number of guns per 100 inhabitants of a country</h1>
+	</div>
+	<div id="full" style="position:relative; width: 800px; height:630px;">
+		<div id="container" style="position: absolute; width: 780px; height: 550px;"></div>
+	</div>
+
+	<div> 
+		<h4>Design keuzes</h4>
+		<p> Wanneer de muis over een land heen gaat wordt er in een popup informatie gegeven over de naam
+		van het land en het aantal vuurwapens per 100 inwoners. Dit zodat de informatie voor een land direct 
+		beschikbaar is.
+		</p>
+		<p>
+		Hiernaast verandert de kleur van het land waar de muis op rust en veranderen ook de kleur en de dikte van de grens van dit land. Dit alles zorgt ervoor dat het voor de gebruiker van de kaart direct duidelijk is aan welk land de popup window gelinkt is.
+		</p>
+		<p>
+		Bron voor de data: <a href="https://en.wikipedia.org/wiki/Estimated_number_of_guns_per_capita_by_country">Wikipedia.org (zie tabel)</a> 
+		</p>
+		<p>
+		Naam: Tim Molleman
+		</p>
+	</div>
+
+</body>
+<script src="d3map.js"></script>
+ 	
+</html>

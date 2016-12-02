@@ -246,7 +246,7 @@ var country_codes = [
     ["uz", "UZB", "Uzbekistan"],
     ["vu", "VUT", "Vanuatu"],
     ["ve", "VEN", "Venezuela, Bolivarian Republic of"],
-    ["vn", "VNM", "Viet Nam"],
+    ["vn", "VNM", "Vietnam"],
     ["vg", "VGB", "Virgin Islands, British"],
     ["vi", "VIR", "Virgin Islands, U.S."],
     ["wf", "WLF", "Wallis and Futuna"],

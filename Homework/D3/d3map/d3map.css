@@ -1,0 +1,25 @@
+/*
+Naam: Tim Molleman
+Studentnummer: 10587306
+*/
+
+.popup
+{
+	color: black;
+	border: 1px grey;
+	border-style: solid;
+	background-color: white;
+	font-size: 12px;
+}
+#full
+{
+	border: 1px black;
+	border-style: solid;
+}
+#container
+{
+	left: 10px;
+}
+
+
+
