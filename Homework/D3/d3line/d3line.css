@@ -2,3 +2,19 @@
 Naam: Tim Molleman
 Studentnummer: 10587306
 */
+.axis path,
+.axis line
+{
+  	fill: none;
+  	stroke: #000;
+  	shape-rendering: crispEdges;
+}
+.x.axis path
+{
+	display: none;
+}
+.x.axis text
+{
+	font-size: 11px;
+	
+}
