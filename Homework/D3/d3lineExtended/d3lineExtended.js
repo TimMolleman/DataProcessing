@@ -3,7 +3,7 @@ Naam: Tim Molleman
 Studentnummer: 10587306
 */
 
-d3.json("d3line.json", function(error, json) {
+d3.json("d3lineExtended.json", function(error, json) {
 	
 	// seperate data in JSON file for years
 	var data_14 = json.fourteen;

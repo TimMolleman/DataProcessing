@@ -111,6 +111,8 @@ d3.json("points.json", function(error, json) {
 			.attr("x", -175)
 			.text("Percentage of Alcohol Retained")
 			.style("font-size", 15);
+
+	
 });
 
 
