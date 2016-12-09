@@ -21,3 +21,8 @@ Studentnummer: 10587306
 {
 	font-size: 12px;
 }
+div.btn-group
+{
+	position: fixed;
+	left: 580px;
+}
