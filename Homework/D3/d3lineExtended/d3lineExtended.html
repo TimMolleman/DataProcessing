@@ -7,13 +7,29 @@ Studentnummer: 10587306
 <head>
 	<title>d3line HTML</title>
 	<link rel="stylesheet" type="text/css" href="d3lineExtended.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   	<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
   	<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+  	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+  	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+
 
 </head>
 
 <body>
-	<svg></svg>
+	<div>
+			<div class="btn-group pull-right">
+  				<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+   						 Choose year <span class="caret"></span>
+ 				</button>
+  				<ul class="dropdown-menu" role="menu">
+   					<li><a class="m" value="2014" href="#">2014</a></li>
+    				<li><a class="m" value="2015" href="#">2015</a></li>
+  				</ul>
+			</div>
+	<div class="svg">
+	</div>
 	<p> 
 		Bron voor de data: <a href="https://www.knmi.nl/nederland-nu/klimatologie/maandgegevens">Koninklijk
 		Nederlands Metereologisch Instituut</a>
