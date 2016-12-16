@@ -16,7 +16,7 @@ Studentnummer: 10587306
 }
 .x.axis text
 {
-	font-size: 13px;
+	font-size: 12px;
 }
 .popup
 {
@@ -39,11 +39,6 @@ Studentnummer: 10587306
 {
   stroke: black;
 }
-.dot.active 
-{
-	fill: yellow;
-}
-
 div.tooltip {	
     position: absolute;			
     text-align: center;			
@@ -56,6 +51,16 @@ div.tooltip {
     border-radius: 8px;			
     pointer-events: none;
 }
+div#barchart 
+{
+	height: 630px;
+	left: 820px;
+}
+.bar
+{
+	stroke: black;
+}
+
 
 	
 

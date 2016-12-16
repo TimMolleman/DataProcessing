@@ -254,13 +254,13 @@ var country_codes = [
     ["eh", "ESH", "Western Sahara"],
     ["ye", "YEM", "Yemen"],
     ["zm", "ZMB", "Zambia"],
-    ["zw", "ZWE", "Zimbabwe"] ];
+    ["zw", "ZWE", "Zimbabwe"]];
 
 d3.json("d3linkedJSON.json", function(error, json) {
 
     var data = json;
 
-    // link country codes data to the number of guns per 100 people
+    // link country codes data to data in json file and store in array
     var codes_data = []
 
     for (i = 0; i < data.length; i++)
@@ -294,11 +294,11 @@ d3.json("d3linkedJSON.json", function(error, json) {
         }
     }
 
+    // create data structures to fill in forEach loop
     var dataset = {};
-    var dataset2 = {};
+    var dataset2 = [];
 
-
-    // fill dataset based on amount of guns per 100 inhabitants
+    // fill datasets based on population size per country
     codes_data.forEach(function(item) {
         var color = null,
             country = item[4]
@@ -307,7 +307,7 @@ d3.json("d3linkedJSON.json", function(error, json) {
             size = item[2]
             density = item[3];
 
-        // determine fillKey based on current value (unless value is "Unknown")    
+        // determine fillKey based on current population value    
         if (population == "Unknown")
         {
             dataset[code] = { inhabitants : population };
@@ -346,19 +346,22 @@ d3.json("d3linkedJSON.json", function(error, json) {
             {
                 color = "> 1000"
             }
+
             // for every country make a key in dataset and add properties to determine color
             dataset[code] = { inhabitants : population, c_size : size, fillKey : color};
 
-            // also create a dataset that will be used for the scatterplot, later on
-            dataset2 = { country : country, ISO : code, inhabitants : population, c_size : size};
+            // also create a dataset that will be used to create scatterplot, later on
+            object = { country : country, ISO : code, population : population, c_size : size, density : density};
+            dataset2.push(object);
         }
     });
     
+    // function that returns population with commas after every 3 numbers
     function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
-    // create a Datamap with dataset, fills in dataset and popus for every country
+    // create a Datamap with dataset
     var basic_choropleth = new Datamap({
       element: document.getElementById("container"),
       projection: 'mercator',
@@ -395,74 +398,45 @@ d3.json("d3linkedJSON.json", function(error, json) {
       },
       data: dataset
     });
+
     // add legend to the basic_chorpleth Datamap
     var legend_params = {
     legendTitle: "Number of inhabitants (in millions)"
     };
     basic_choropleth.legend(legend_params);
 
-    /* D3 svg part */
+    /* d3 scatterplot part */
 
-    // determine width, height and margins of the svg element
-    var margins = {left: 80, right: 60, top: 20, bottom: 75},
-        width = 800 - margins.left - margins.right,
-        height = 400 - margins.bottom - margins.top;
+    /* first, create all functions for the visualizations that are created
+    below */
 
-    // create scale for x-data (country size in squared kilometers)
-    var x = d3.scale.linear()
-            .domain(d3.extent(data, function(d) { return Number(d.datap.c_size /1000); }))
-            .rangeRound([0, width]);
-
-    // create x-axis for data
-    var xAxis = d3.svg.axis()
-                .scale(x)
-                .orient("bottom")
-                .ticks(20)
-
-    // create scale for y-data
-    var y = d3.scale.linear()
-            .domain(d3.extent(data, function(d) { return Number(d.datap.population / 1000000); }))
-            .rangeRound([height, 0]);
-
-    // functions that map datapoints to the right positions on the graph
-     var xMap = function(d) { return x(Number(d.datap.c_size / 1000));},
-        yMap = function(d) { return y(Number(d.datap.population / 1000000))};
-
-    // create y-axis for data
-    var yAxis = d3.svg.axis()
-                .scale(y)
-                .orient("left");
-
-    var tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
-
+     // function that will return color of dot based on population size
     var colorfunction = function(d) { 
-        if (d.datap.population < 5000000 )
+        if (d.population < 5000000 )
             {
                 return "#fee6ce";
             }
-            else if (d.datap.population >= 5000000  && d.datap.population < 10000000 )
+            else if (d.population >= 5000000 && d.population < 10000000 )
             {
                 return "#fdd0a2";
             }
-            else if (d.datap.population >= 10000000  && d.datap.population < 25000000 )
+            else if (d.population >= 10000000 && d.population < 25000000 )
             {
                 return "#fdae6b";
             }
-            else if (d.datap.population >= 25000000  && d.datap.population < 75000000 )
+            else if (d.population >= 25000000 && d.population < 75000000 )
             {
                 return "#fd8d3c";
             }
-            else if (d.datap.population >= 75000000  && d.datap.population < 100000000 )
+            else if (d.population >= 75000000 && d.population < 100000000 )
             {
                 return "#f16913";
             }
-            else if (d.datap.population >= 100000000  && d.datap.population < 200000000 )
+            else if (d.population >= 100000000 && d.population < 200000000 )
             {
-                return"#d94801";
+                return "#d94801";
             }
-            else if (d.datap.population >= 200000000  && d.datap.population < 1000000000 )
+            else if (d.population >= 200000000 && d.population < 1000000000 )
             {
                 return "#a63603";
             }
@@ -471,6 +445,144 @@ d3.json("d3linkedJSON.json", function(error, json) {
                 return "#7f2704";
             }
     }
+
+    // function creates tooltip for the dot that the mouse is on
+    function mouseover(d) {
+        tooltip.transition()
+               .duration(200)
+               .style("opacity", .9);
+
+        // get the text for the tooltip and show text
+        tooltip.html(d.country + "</br> Population per km2: " + d.density)
+               .style("left", (d3.event.pageX + 5) + "px")
+               .style("top", (d3.event.pageY - 28) + "px");
+    }
+
+    // function that lets tooltip fadeout if the mouse leaves the dot
+    function mouseout(d) {
+        tooltip.transition()
+        .duration(800)
+        .style("opacity", 0);
+    }
+
+    /* this function highlights the dot that is hovered over in corresponding
+    country in datamap. Also highlights the corresponding bar graph (created
+    later on in file) */
+    function highlightdata() {
+         basic_choropleth.svg.selectAll('.datamaps-subunit')
+            .on('mouseenter', function(geography) {
+                // change the size and color of the right dot
+                d3.select('.' + geography.id + ".dot")
+                        .transition()
+                        .duration(400)
+                        .style("fill", "yellow")
+                        .attr("r", 6);
+
+                // determine position of the tooltip
+                var posX = Number(d3.select('.' + geography.id + '.dot').attr("cx")) + 95,
+                    posY = Number(d3.select('.' + geography.id + '.dot').attr("cy")) + 725;
+
+                // make tooltip appear
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9)
+
+                var dens = undefined; 
+
+                // find the right population density for current geography.id
+                dataset2.forEach(function(item) {
+                    if (item.ISO == geography.id)
+                    {
+                        dens = item.density;
+                    }
+                })
+
+                // show tooltip at right position in the scatterplot
+                tooltip.html(geography.properties.name + "</br> Population per km2: " + dens)
+                    .style("left", (posX + "px"))
+                    .style("top", (posY + "px"));
+
+                // based on density value, change bar color to yellow
+                if (dens < 50)
+                {
+                    d3.select(".low.bar")
+                        .style("fill", "yellow")
+                }
+                else if (dens >= 50 && dens < 100)
+                {
+                    d3.select(".medlow.bar")
+                        .style("fill", "yellow");
+                }
+                else if (dens >= 100 && dens < 300)
+                {
+                    d3.select(".med.bar")
+                        .style("fill", "yellow");
+                }
+                else if (dens >= 300 && dens < 1000)
+                {
+                    d3.select(".medhigh.bar")
+                        .style("fill", "yellow");
+                }
+                else
+                {
+                    d3.select(".high.bar")
+                        .style("fill", "yellow");
+                }
+            })
+
+            // change circle size and color to original state on mouseleave
+            .on('mouseleave', function(geography) {
+                d3.select('.' + geography.id + ".dot")
+                    .transition()
+                    .duration(400)
+                    .style("fill", colorfunction)
+                    .attr("r", 3)
+
+                // tooltip fadeout on mouseleave 
+                tooltip.transition()
+                .duration(800)
+                .style("opacity", 0);
+
+                // also change bar colors to original color on mouseleave
+                d3.selectAll('.bar')
+                    .style("fill", "#d94801")
+            })            
+    };
+
+    // determine width, height and margins of the svg element for scatterplot
+    var margins = {left: 80, right: 60, top: 60, bottom: 75},
+        width = 800 - margins.left - margins.right,
+        height = 400 - margins.bottom - margins.top;
+
+    // create scale for x-data (country size in squared kilometers)
+    var x = d3.scale.linear()
+            .domain(d3.extent(dataset2, function(d) { return Number(d.c_size /1000); }))
+            .rangeRound([0, width]);
+
+    // create x-axis for data
+    var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom")
+                .ticks(20);
+
+    // create scale for y-data
+    var y = d3.scale.linear()
+            .domain(d3.extent(dataset2, function(d) { return Number(d.population / 1000000); }))
+            .rangeRound([height, 0]);
+
+    // functions that map datapoints to the right positions on the graph
+     var xMap = function(d) { return x(Number(d.c_size / 1000));},
+        yMap = function(d) { return y(Number(d.population / 1000000))};
+
+    // create y-axis for data
+    var yAxis = d3.svg.axis()
+                .scale(y)
+                .orient("left");
+
+    // append div element for tooltip on the scatterplot
+    var tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
 
     // adjust attributes of svg element and determine graph position
     var canvas = d3.select("div#scatterplot").append("svg")
@@ -487,9 +599,9 @@ d3.json("d3linkedJSON.json", function(error, json) {
         .append("text")
         .attr("class", "x label")
         .text("Country size (per thousand squared kilometers)")
-        .style("font-size", 20)
+        .style("font-size", 18)
         .attr("y", 50)
-        .attr("x", 150);
+        .attr("x", 175);
 
     // add the y-axis to the graph
     g.append("g")
@@ -497,88 +609,156 @@ d3.json("d3linkedJSON.json", function(error, json) {
         .call(yAxis)
         .append("text")
         .text("Inhabitants (in millions)")
+        .style("font-size", 18)
         .attr("transform", "rotate(-90)")
-        .attr("y", -60)
-        .attr("x", -250);
+        .attr("y", -55)
+        .attr("x", -230);
 
     // append dot to every data point and draw it
     g.selectAll(".dot")
-        .data(data)
+        .data(dataset2)
         .enter().append("circle")
-        .attr("class", function(d) { return d.country + " dot"; })
+        .attr("class", function(d) { return d.ISO + " dot"; })
         .attr("r", 3)
         .attr("cx", xMap)
         .attr("cy", yMap)
         .style("fill", colorfunction)
         .on("mouseover", mouseover)
-        .on("mouseout", mouseout)
+        .on("mouseout", mouseout);
 
-    // function creates tooltip for the dot that the mouse is on
-    function mouseover(d) {
-        tooltip.transition()
-               .duration(200)
-               .style("opacity", .9);
+     // add title to the scatterplot
+    canvas.append("text")
+            .attr("y", 30)
+            .attr("x", 220)
+            .style("font-size", 20)
+            .text("Number of inhabitants plotted against country size");
 
-        tooltip.html(d.country + "</br> Population per km2: " + d.datap.density)
-               .style("left", (d3.event.pageX + 5) + "px")
-               .style("top", (d3.event.pageY - 28) + "px");
-    }
+    /* d3 bargraph part */
 
-    console.log(dataset);
+    // create counters for density counts
+    var count1 = 0,
+    count2 = 0,
+    count3 = 0,
+    count4 = 0,
+    count5 = 0;
 
-    // function makes tooltip fadeout if the mouse leaves the dot
-    function mouseout(d) {
-        tooltip.transition()
-        .duration(800)
-        .style("opacity", 0);
-    }
+    // create density data for the bar graph
+    data_density = []
+    dataset2.forEach(function(item){
+        if (item.density < 50)
+        {
+            count1 = count1 + 1;
+        }
+        else if (item.density >= 50 && item.density < 100)
+        {
+            count2 = count2 + 1
+        }
+        else if (item.density >= 100 && item.density < 300)
+        {
+            count3 = count3 + 1;
+        }
+        else if (item.density >= 300 && item.density < 1000)
+        {
+            count4 = count4 + 1;
+        }
+        else
+        {
+            count5 = count5 + 1;
+        }
+    })
 
-    // function highlights the dot that is clicked on in datamap
-    function highlightdata() {
-         basic_choropleth.svg.selectAll('.datamaps-subunit')
-            .on('mouseover', function(geography) {
-                    d3.select('.' + geography.properties.name + ".dot")
-                        .transition()
-                        .duration(400)
-                        .style("fill", "yellow")
-                        .attr("r", 7)
+    // dataset to read in for bar graph
+    data_density.push({level : "low", num : "< 50", density: count1}, 
+        {level : "medlow", num : "50 - 100", density: count2}, 
+        {level : "med", num : "100 - 300", density: count3}, 
+        {level : "medhigh", num : "300 - 1000", density: count4},
+        {level : "high", num : "> 1000", density: count5});
 
-                    tooltip.transition()
-                            .duration(200)
-                            .style("opacity", .9)
+    // dataset to label and scale the x-axis
+    data_x = ["< 50", "50 - 100", "100 - 300", "300 - 1000", "> 1000"];
 
-                })
-            .on('mouseout', function(geography) {
-                    d3.select('.' + geography.properties.name + ".dot")
-                        .transition()
-                        .duration(400)
-                        .style("fill", colorfunction)
-                        .attr("r", 3)
+    // define the margins of the barchart
+    var margins2 = {top: 50, bottom: 40, left: 55, right : 0};
 
-                    tooltip.transition()
-                    .duration(800)
-                    .style("opacity", 0);
-                })            
-    };
+    // define the desired width of bars and desired space between bars
+    var barWidth = 55;
+    var barSpace = 20;
 
+    // define the width of the svg element and height
+    var width2 = (barWidth + barSpace) * data_x.length - margins2.left - margins2.right;
+    var height2 = 500 - margins2.top - margins2.bottom;
+
+    // create range for x-axis and x data
+    var x2 = d3.scale.ordinal()
+            .domain(data_x)
+            .rangeRoundBands([0, width2], 0.38);
+
+    // create x-axis
+    var xAxis2 = d3.svg.axis()
+                .scale(x2)
+                .orient("bottom");
+
+    // create range for y-axis and y data
+    var y2 = d3.scale.linear()
+            .domain([0, 80])
+            .rangeRound([height2, 0]);
+
+    // create y-axis
+    var yAxis2 = d3.svg.axis()
+                .scale(y2)
+                .orient("left");
+
+    // add an svg element to the body
+    var canvas2 = d3.select("body").select("div#barchart").append("svg")
+                    .attr("width", width2 + margins2.left + margins2.right)
+                    .attr("height", height2 + margins2.top + margins2.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margins2.left + "," + margins2.top + ")");
+
+    // append a g element for every data point in data_density
+    var bar = canvas2.selectAll("g")
+            .data(data_density)
+            .enter()
+            .append("g");
+
+    // make a rectangle in every bar element for all data points
+    bar.append("rect")
+        .attr("class", function(d) { return d.level + " bar"})
+        .attr("x", function(d) { return x2(d.num); })
+        .attr("y", function(d) { return y2(d.density); })
+        .attr("height", function(d) { return height2 - y2(d.density); })
+        .attr("width", barWidth - barSpace)
+        .attr("fill", "#d94801");
+
+    // add the x-axis to the svg element
+    canvas2.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0, " + height2 + ")")
+            .call(xAxis2)
+            .append("text")
+            .text("Population density per km2")
+            .attr("y", +35)
+            .attr("x", +70)
+            .style("font-size", 15);
+
+    // add the y-axis to svg element
+    canvas2.append("g")
+            .attr("class", "y axis")
+            .call(yAxis2)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -35)
+            .attr("x", -250)
+            .text("Number of countries")
+            .style("font-size", 15);
+
+    // add title to the barchart
+    canvas2.append("text")
+            .attr("y", -20)
+            .attr("x", -10)
+            .style("font-size", 18)
+            .text("Number of countries per densities interval");
+
+    // call highlight function
     highlightdata();
-
-    // console.log(country);
-    // highlightData(country);
-
-
-    // function interactive (d) {
-    //     basic_choropleth.svg.selectAll('.datamaps-subunit').on('click', function(geography) {
-    //         console.log(geography.properties.name);
-    //         console.log(d.country);
-    //         if (d.country == geography.properties.name)
-    //         {
-    //             console.log(d.country)
-    //             console.log(geography.properties.name);
-    //             return "yellow";
-    //         }
-
-    //     });
-    // };
-
 });
